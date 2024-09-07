@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="./assets/images/logo.jpg" type="image/icon type">
+    <title>Plateforme de Troc</title>
+    <link rel="stylesheet" href="./assets/CSS/styles.css"> <!-- Lien vers votre fichier CSS -->
+    <link rel="stylesheet" href="./assets/CSS/style_index.css"> <!-- Lien vers votre fichier CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script defer src="./assets/JS/script.js"></script>
+    <script defer src="./assets/JS/script_index.js"></script>
+</head>
+
+<body>
+    <header>
+        <h1><a href=""><span class="lettre">A</span>nnonce <span class="lettre">B</span>laise</a></h1>
+
+        <!-- Menu hamburger -->
+        <div class="menu-toggle">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+
+        <nav>
+            <ul>
+                <li><a class="category" value="indetermine" href="">Tout</a></li>
+                <li><a class="category" value="divers" href="#divers">Divers</a></li>
+                <li><a class="category" value="meuble" href="#meuble">Meuble</a></li>
+                <li><a class="category" value="vetement" href="#vetement">Vêtement</a></li>
+                <li><a class="category" value="jeux" href="#jeux">Jeux</a></li>
+                <li><a class="category" value="nourriture" href="#nourriture">Nourriture</a></li>
+                <li>
+                    <div id="annonce-bouton">
+                        <button onclick="window.location.href='post.html'">
+                            Ajouter Annonce
+                        </button>
+                        <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                    </div>
+                </li>
+                <li>
+                    <div class="user-info">
+
+
+
+                        <span id="btnLogin" onclick="window.location.href='login.html'">Se Connecter</span>
+                        <span id="btnRegister" onclick="window.location.href='register.html'">S'inscrire</span>
+
+                    </div>
+                </li>
+            </ul>
+
+
+
+
+        </nav>
+
+
+    </header>
+
+
+    <section class="post"></section>
+
+
+
+    <footer></footer>
+
+
+</body>
+
+</html>

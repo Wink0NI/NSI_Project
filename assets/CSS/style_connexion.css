@@ -1,0 +1,80 @@
+main{
+    display: flex;
+    height: 85vh;
+    justify-content: center;
+    align-items: center;
+}
+
+button{
+    width: 250px;
+    height: 70px;
+    background-color: white;
+    color: #62B6CB;
+    font-family: "Baloo", sans-serif;
+    font-size: 25px;
+}
+
+
+
+#loginForm{
+    width: 80%;
+    height: 80%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.login-box {
+    width: 60%;
+    height: 400px;
+    font-size: 25px;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    border: 2px solid #4a90e2;
+    border-radius: 10px;
+    font-family: Baloo;
+    color: #1B4965;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+}
+
+.login-box h2 {
+    text-align: center;
+    margin: 40px;
+}
+
+.login-box input {
+    width: calc(100% - 22px);
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.login-box input[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    background-color: #4a90e2;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.login-box input[type="submit"]:hover {
+    background-color: #357ab7;
+}
+
+.error {
+    color: red;
+}
+
+.not-connected {
+    font-size: 15px; /* Réduction de la taille de la police */
+    width: 100%;
+    color: #000; /* Couleur du texte */
+}

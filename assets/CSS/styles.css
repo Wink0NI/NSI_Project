@@ -1,0 +1,157 @@
+/* style d'ecriture pour titre */
+@font-face {
+    font-family: "lobster";
+    src: url(./assets/fonts/Lobster-Regular.ttf);
+}
+  /* style d'écriture page */
+@font-face {
+    font-family: "Poppins";
+    src: url(./assets/fonts/Poppins-Regular.ttf);
+}
+@font-face {
+    font-family: "Baloo";
+    src: url(../fonts/Baloo-Regular.ttf) format("truetype"); /*https://www.fontsquirrel.com/fonts/download/baloo*/
+}
+
+*{
+    margin: 0;
+    border: 0;
+    padding: 0;
+    text-decoration: none;
+    list-style: none;
+    font-family: "Arial", sans-serif;
+}
+
+body {
+    font-family: "Arial";
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(180deg, #E6E6E6, #9CC9E8) center/cover;
+    min-height: 100vh;
+}
+
+
+header {    
+    display: flex;
+    align-items: center;
+    background-color: #1B4965;
+    color: #62B6CB;
+    flex-wrap: wrap;
+    padding: 0 10px;
+    justify-content: space-between;
+}
+
+
+
+header h1 a {
+    font-family: "Baloo", serif;
+    text-decoration: none;
+    color: #1db6b3;
+}
+.lettre {
+    font-family: "Baloo", serif;
+    color: #E6E6E6
+}
+
+
+/* Styles généraux pour la liste de navigation */
+nav ul {
+    display: flex;
+    list-style: none;
+    padding: 15px 0;
+}
+
+nav ul li {
+    margin: 0 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+nav ul li a {
+    text-decoration: none;
+    font-weight: bold;
+    cursor: pointer;
+    color: #BEE9E8;
+}
+
+nav ul li div.user-info {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav ul li div.user-info span {
+    text-align: center;
+    margin:  0 15px;
+}
+
+/* Styles pour le menu hamburger */
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    margin-left: auto; /* Alignement à droite */
+}
+
+.active {
+    margin-left: 50px;
+}
+
+.menu-toggle div {
+    width: 30px;
+    height: 3px;
+    background-color: white;
+    margin: 2.25px 0;
+    transition: 0.3s;
+}
+
+/* Styles pour le menu hamburger sur petits écrans */
+@media (max-width: 768px) {
+
+    nav ul {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        text-align: center;
+    }
+
+    nav ul.active {
+        display: flex;
+    }
+
+    nav ul li {
+        margin: 10px 0;
+    }
+
+    .menu-toggle {
+        display: flex;
+    }
+}
+
+/* Styles pour l'icône de menu hamburger lorsque le menu est ouvert */
+.menu-toggle.active div:nth-child(1) {
+    transform: rotate(-45deg) translate(-5px, 6px);
+}
+
+.menu-toggle.active div:nth-child(2) {
+    opacity: 0;
+}
+
+.menu-toggle.active div:nth-child(3) {
+    transform: rotate(45deg) translate(-5px, -6px);
+}
+
+/* Ajustements spécifiques pour la couleur des liens dans le menu hamburger */
+@media (max-width: 768px) {
+    nav ul li a {
+        color: #BEE9E8; /* Couleur des liens dans le menu hamburger */
+    }
+}
+
+
+
+
+
+
+

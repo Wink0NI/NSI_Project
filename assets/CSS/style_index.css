@@ -1,0 +1,37 @@
+main {
+    padding: 20px;
+}
+
+section.post {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    gap: 20px;
+    margin: 5px 0;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+}
+
+
+
+.product {
+    border: 1px solid #ccc;
+    padding: 10px;
+    width: 500px;
+    box-sizing: border-box;
+    text-align: center;
+    background-color: #f9f9f9;
+}
+
+.product img {
+    max-width: 100%;
+    height: auto;
+}
+
+
+
+.product.grayed-out {
+    background-color: #e0e0e0;
+    color: #a0a0a0;
+}

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion</title>
+    <link rel="stylesheet" href="./assets/CSS/styles.css">
+    <link rel="stylesheet" href="./assets/CSS/style_connexion.css" />
+
+    <script defer src="./assets/JS/script_connexion.js"></script>
+</head>
+
+<body>
+
+    <header>
+        <h1><a href="index.html"><span class="lettre">A</span>nnonce <span
+                    class="lettre">B</span>laise</a></h1>
+    </header>
+
+    <main>
+
+        <div class="login-box">
+            <h2>Connexion</h2>
+            <span id="error-message" class="error"></span>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Nom d'utilisateur :</label>
+                    <input type="text" id="username" name="username" required><br>
+
+                    <label for="password">Mot de passe :</label>
+                    <input type="password" id="password" name="password" required><br>
+                </div>
+                <a href='register.html' class="not-connected">
+                    Première fois ???
+                </a>
+
+                <button type="submit">Se connecter</button>
+
+            </form>
+
+        </div>
+    </main>
+
+
+
+</body>
+
+</html>

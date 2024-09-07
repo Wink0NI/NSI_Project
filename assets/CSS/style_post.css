@@ -1,0 +1,83 @@
+/* Styles pour le formulaire d'annonce */
+#announcement-form {
+    background-color: rgb(231, 238, 255);
+    padding: 20px;
+    border-radius: 5px;
+}
+
+#announcement-form h2 {
+    margin-bottom: 10px;
+}
+
+#announcement-form form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#announcement-form form label {
+    font-weight: bold;
+}
+
+#announcement-form form input,
+#announcement-form form select {
+    padding: 5px;
+    font-size: 1rem;
+}
+
+#announcement-form form button {
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#announcement-form form button:hover {
+    background-color: #0056b3;
+}
+
+
+.product-picture {
+    position: relative;
+}
+
+.product-picture img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.product-picture:hover .overlay {
+    opacity: 1;
+}
+
+.product-picture input[type="file"] {
+    opacity: 0;
+}
+
+.fa {
+    margin-right: 10px;
+}
+
+#checkbox {
+    align-items: center;
+}
+
+#checkbox p {
+    margin: 0;
+}
