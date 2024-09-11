@@ -1,12 +1,30 @@
 "use strict";
 
 const $logout = document.querySelector("div.user-info>span#btnLogout");
+const $user_info = document.querySelector("div.user-info");
+
 // Vérifier si l'utilisateur est connecté
 fetch('http://localhost:3000/check-session', {
     credentials: 'include'
 }).then(response => response.json())
     .then(data => {
         if (data.loggedIn) {
+            $user_info.removeChild(document.getElementById('btnLogin'));
+            $user_info.removeChild(document.getElementById('btnRegister'));
+
+            const $logout = document.createElement('span');
+            $logout.setAttribute("id", "btnLogout");
+            $logout.addEventListener("click", function () {
+                fetch('http://localhost:3000/logout', {
+                    credentials: 'include'
+                }).then(() => {
+                    alert('Déconnexion réussie');
+                    window.location.reload(); // Recharger la page après déconnexion
+                });
+            });
+            $logout.textContent = "Se Déconnecter";
+            $user_info.appendChild($logout);
+
             const $user_greeting = document.createElement('span');
             $user_greeting.setAttribute("id", 'user-greeting');
             $user_greeting.innerHTML = `Connecté en tant que <strong>${data.username}</strong>`;
@@ -15,9 +33,6 @@ fetch('http://localhost:3000/check-session', {
         } else {
             window.location.href = 'login.html';
         }
-    })
-    .catch(err => {
-        window.location.href = 'login.html';
     });
 
 function logout() {

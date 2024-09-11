@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./assets/CSS/styles.css">
     <link rel="stylesheet" href="./assets/CSS/style_my_products.css">
+    <script defer src="./assets/JS/script.js"></script>
     <script defer src="./assets/JS/script_my_products.js"></script>
+    
     <title>Mes Annonces</title>
 </head>
 
@@ -23,13 +25,27 @@
 
         <nav>
             <ul>
+                <li><a class="category" value="indetermine" href="index.html">Tout</a></li>
+                <li><a class="category" value="divers" href="index.html#divers">Divers</a></li>
+                <li><a class="category" value="meuble" href="index.html#meuble">Meuble</a></li>
+                <li><a class="category" value="vetement" href="index.html#vetement">Vêtement</a></li>
+                <li><a class="category" value="jeux" href="index.html#jeux">Jeux</a></li>
+                <li><a class="category" value="nourriture" href="index.html#nourriture">Nourriture</a></li>
                 <li>
                     <div class="user-info">
-                        <span id="user-greeting"></span>
-                        <span id="btnLogout" onclick="logout()">Se Déconnecter</span>
+
+
+
+                        <span id="btnLogin" onclick="window.location.href='login.html'">Se Connecter</span>
+                        <span id="btnRegister" onclick="window.location.href='register.html'">S'inscrire</span>
+
                     </div>
                 </li>
             </ul>
+
+
+
+
         </nav>
 
 

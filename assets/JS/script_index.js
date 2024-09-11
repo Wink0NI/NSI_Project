@@ -42,7 +42,7 @@ fetch('http://localhost:3000/check-session', {
             })
             $logout.insertAdjacentElement("beforebegin", $my_products);
 
-                  
+
 
             const $annonce_button = document.createElement("button");
             $annonce_button.textContent = "Ajouter Annonce";
@@ -169,11 +169,11 @@ categories.forEach(category => {
 
 
 // Charger les produits une fois que la page est complètement chargée
-window.onload = function() {
+window.onload = function () {
     // Extraire la catégorie de l'URL
     const hash = window.location.hash; // Ex : #jeux
     const category = hash ? hash.substring(1) : null; // Retirer le '#' du début
-    
+
     // Appeler la fonction avec la catégorie extraite
     loadProducts(category);
 };
