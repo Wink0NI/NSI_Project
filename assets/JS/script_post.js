@@ -83,7 +83,7 @@ const $logout = document.querySelector("div.user-info>span#btnLogout");
                     if (data.message === "FAILURE") alert(data.error);
                     else {
                         alert(data.message);
-                        window.open(`product-details.html?id=${data.id}`, '_blank');
+                        window.location.href = `product-details.html?id=${data.id}`;
                     }
 
                 }).catch(error => console.error('Error:', error));

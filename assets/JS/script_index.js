@@ -8,7 +8,6 @@ const $logout = document.querySelector("div.user-info>span#btnLogout");
         }).then(response => response.json())
             .then(data => {
                 if (data.loggedIn) {
-                    console.log($user_info)
                     document.getElementById('annonce-bouton').style.display = 'block';
                     $user_info.removeChild(document.getElementById('btnLogin'));
                     $user_info.removeChild(document.getElementById('btnRegister'));
@@ -32,10 +31,14 @@ const $logout = document.querySelector("div.user-info>span#btnLogout");
                     $logout.insertAdjacentElement("beforebegin", $user_greeting);
 
 
-                    const $favorite = document.createElement('span');
-                    $favorite.setAttribute('id', "favorite");
-                    $favorite.textContent = "Favoris";
-                    $logout.insertAdjacentElement("beforebegin", $favorite);
+                    const $my_products = document.createElement('span');
+                    $my_products.setAttribute('id', "my_products");
+                    $my_products.textContent = "Mes produits";
+
+                    $my_products.addEventListener('click', function (e) {
+                        window.location.href = "my_products.html"
+                    })
+                    $logout.insertAdjacentElement("beforebegin", $my_products);
 
                 }
             });

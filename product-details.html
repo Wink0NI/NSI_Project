@@ -31,7 +31,6 @@
                     .then(data => {
                         const detailsContainer = document.getElementById('product-details');
                         if (data) {
-                            console.log(data);
                             detailsContainer.innerHTML = `
                          <strong>Nom :</strong> ${data.product.name}<br>
                          <strong>By :</strong> ${data.product.owner}<br>
@@ -44,7 +43,6 @@
                             fetch(`http://localhost:3000/user/${data.product.owner}`)
                                 .then(response => response.json())
                                 .then(owner_data => {
-                                    console.log(owner_data)
                                     detailsContainer.innerHTML += owner_data ? 
                                     `<strong>Numéro de téléphone :</strong> ${owner_data.tel}<br>
                                      <strong>Email :</strong> ${owner_data.email ? owner_data.email : "Aucun"}<br>` : ""

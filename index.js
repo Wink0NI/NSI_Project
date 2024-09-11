@@ -268,7 +268,7 @@ app.get('/produit/:product_id', (req, res) => {
 
 // Route pour récupérer la liste de tous les produits avec les informations price, type et image
 app.get('/produits', (req, res) => {
-    db.all('SELECT id, name, echange_type, image FROM products WHERE status = "AVAILABLE"', [], (err, rows) => {
+    db.all('SELECT id, name, echange_type, image FROM products WHERE status = "AVAILABLE" ORDER BY date_creation DESC', [], (err, rows) => {
         if (err) {
             return res.status(500).json({ error: 'Erreur interne du serveur' });
         }
@@ -278,7 +278,7 @@ app.get('/produits', (req, res) => {
 
 app.get('/produits/:category', (req, res) => {
     const category = req.params.category;
-    db.all('SELECT id, name, echange_type, echange_contre, category, image, date_creation FROM products WHERE category = ?', [category], (err, rows) => {
+    db.all('SELECT id, name, echange_type, echange_contre, category, image, date_creation FROM products WHERE category = ? ORDER BY date_creation DESC', [category], (err, rows) => {
         if (err) {
             console.log(err);
             return res.status(500).json({ error: 'Erreur interne du serveur' });
@@ -304,16 +304,19 @@ app.get('/user', (req, res) => {
 
 // Définir la route /my_products
 app.get('/my_products', (req, res) => {
-    const utilisateur = req.session.user.username;  // Récupère la valeur du paramètre 'id'
+    const utilisateur = req.session.user;  // Récupère la valeur du paramètre 'id'
+    if (!utilisateur) {
+        return res.status(401).json({ error: 'Vous devez vous connecter pour voir vos produits' });
+    }
 
-    db.get('SELECT * FROM products WHERE owner = ?', [utilisateur], (err, row) => {
+    db.all('SELECT * FROM products WHERE owner = ? ORDER BY date_creation DESC', [utilisateur.username], (err, row) => {
         if (err) {
             return res.status(500).json({ error: 'Erreur interne du serveur' });
         }
         if (!row) {
             return res.json({ message: 'Vide' });
         }
-        res.json({ product: row });
+        res.json({ products: row });
     });
 });
 
@@ -324,7 +327,7 @@ app.post('/my_products/delete', (req, res) => {
 
     db.get('DELETE FROM products WHERE id = ?', [image_id], (err) => {
         if (err) {
-            return res.status(500).json({ error: 'Erreur interne du serveur' });
+            return res.status(500).json({ message: "FAILURE", error: 'Erreur interne du serveur' });
         }
         return res.json({ message: 'SUCCESS' });
     });
