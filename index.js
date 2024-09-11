@@ -6,9 +6,14 @@ const session = require('express-session');
 const cors = require('cors');
 const db = require('./database');
 const { v4: uuidv4 } = require('uuid');
+const CryptoJS = require('crypto-js');
+
+// Chiffrer un message
 
 const app = express();
 const port = 3000;
+
+const key = 'MessageSecret';
 
 
 
@@ -87,7 +92,6 @@ async function saveProducts(products) {
             `INSERT INTO products (id, name, description, echange_type, echange_contre, category, image, owner, date_creation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [id, products.name, products.description, products.echange_type, products.echange_contre, products.category, products.image, products.owner, Date.now()],
             function (err) {
-                console.log(err)
                 if (err) {
                     return { message: "FAILURE" };
                 }
@@ -102,30 +106,52 @@ async function saveProducts(products) {
 }
 
 
-function getUser(user, callback) {
-    db.get('SELECT * FROM users WHERE username = ?', [user], (err, row) => {
+function getUser(username, callback) {
+    // Récupérer tous les utilisateurs
+    db.all('SELECT * FROM users', [], (err, rows) => {
         if (err) {
             return callback(err, null);
         }
-        callback(null, row);
+
+        // Itérer sur chaque utilisateur
+        for (let user of rows) {
+
+            // Déchiffrer le nom d'utilisateur
+            const decryptedUsername = CryptoJS.AES.decrypt(user.username, key).toString(CryptoJS.enc.Utf8);
+
+            // Comparer le nom d'utilisateur déchiffré avec le nom d'utilisateur fourni
+            if (decryptedUsername === username) {
+                // Ne pas déchiffrer le mot de passe ici pour des raisons de sécurité
+                user.password = "PRIVATE"; // On cache le mot de passe
+                return callback(null, user);
+            }
+
+        }
+
+        // Si aucun utilisateur n'a été trouvé
+        return callback(null, null);
     });
 }
 
-function getUserByEmail(email, callback) {
-    db.get('SELECT * FROM users WHERE email = ?', [email], (err, row) => {
-        if (err) {
-            return callback(err, null);
-        }
-        callback(null, row);
-    });
-}
+
+
 
 function getConnection(user, password, callback) {
-    db.get('SELECT * FROM users WHERE username = ? AND password = ?', [user, password], (err, row) => {
+    db.all('SELECT * FROM users', [], (err, rows) => {
         if (err) {
             return callback(err, null);
         }
-        callback(null, row);
+
+        // Filtrer les utilisateurs pour trouver celui qui correspond au nom d'utilisateur donné
+        rows.filter(row => CryptoJS.AES.decrypt(row.username, key).toString(CryptoJS.enc.Utf8) === user && CryptoJS.AES.decrypt(row.password, key).toString(CryptoJS.enc.Utf8) === password);
+
+        // Vérifier si un utilisateur a été trouvé
+        if (rows.length > 0) {
+            return callback(null, rows[0]);
+        } else {
+            // Si aucun utilisateur n'a été trouvé
+            return callback(null, null);
+        }
     });
 }
 
@@ -148,6 +174,35 @@ app.get('/check-session', (req, res) => {
     }
 });
 
+function decryptUser(user) {
+    user.username = CryptoJS.AES.decrypt(user.username, key).toString(CryptoJS.enc.Utf8);
+    user.password = "SECRET";
+    user.email = user.email ? CryptoJS.AES.decrypt(user.email, key).toString(CryptoJS.enc.Utf8) : "";
+    user.tel = user.tel ? CryptoJS.AES.decrypt(user.tel, key).toString(CryptoJS.enc.Utf8) : "";
+    return user;
+
+}
+
+function decryptProduct(product) {
+
+    product.name = product.name ? CryptoJS.AES.decrypt(product.name, key).toString(CryptoJS.enc.Utf8) : "";
+    product.description = product.description ? CryptoJS.AES.decrypt(product.description, key).toString(CryptoJS.enc.Utf8) : "";
+    product.echange_type = product.echange_type ? CryptoJS.AES.decrypt(product.echange_type, key).toString(CryptoJS.enc.Utf8) : "";
+    product.echange_contre = product.echange_contre ? CryptoJS.AES.decrypt(product.echange_contre, key).toString(CryptoJS.enc.Utf8) : "";
+    product.category = product.category ? CryptoJS.AES.decrypt(product.category, key).toString(CryptoJS.enc.Utf8) : "";
+    product.image = product.image ? CryptoJS.AES.decrypt(product.image, key).toString(CryptoJS.enc.Utf8) : "";
+    product.owner = product.owner ? CryptoJS.AES.decrypt(product.owner, key).toString(CryptoJS.enc.Utf8) : "";
+
+    return product;
+}
+
+function decryptProducts(products) {
+    for (let i = 0; i < products.length; i++) {
+        products[i] = decryptProduct(products[i]);
+    }
+    return products;
+}
+
 // Route pour gérer la connexion
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
@@ -156,11 +211,11 @@ app.post('/login', (req, res) => {
 
     getConnection(username, password, (err, user) => {
         if (err) {
+            console.error(err);
             return res.status(500).json({ message: 'Internal server error' });
         }
 
         if (user) {
-
             req.session.user = { username: username, email: user.mail, tel: user.tel };  // Store only necessary user info
 
             return res.json({ message: 'Connexion réussie' });
@@ -179,24 +234,30 @@ app.post('/register', (req, res) => {
 
 
     getUser(username, (err, user) => {
+
+
         if (err) {
-            
+
             return res.status(500).json({ message: 'Internal server error' });
         }
 
         if (user) return res.status(401).json({ message: "Nom d'utilisateur déjà existant" });
 
 
-        
-        addUser(username, password, email, tel, (err) => {
-            if (err) {
-                console.log(err)
-                return res.status(500).json({ message: 'Error registering user' });
-            }
 
-            req.session.user = { username: username, email: email, tel: tel };
-            return res.json({ message: 'Inscription réussie' });
-        });
+        addUser(
+            CryptoJS.AES.encrypt(username, key).toString(),
+            CryptoJS.AES.encrypt(password, key).toString(),
+            CryptoJS.AES.encrypt(email, key).toString(),
+            CryptoJS.AES.encrypt(tel, key).toString(),
+            (err) => {
+                if (err) {
+                    return res.status(500).json({ message: 'Error registering user' });
+                }
+
+                req.session.user = { username: username, email: email, tel: tel };
+                return res.json({ message: 'Inscription réussie' });
+            });
 
     });
 });
@@ -209,12 +270,14 @@ app.get('/user/:username', (req, res) => {
         }
 
         if (user) {
+            user = decryptUser(user);
             return res.json(user);
         } else {
             return res.status(404).json({ message: 'Utilisateur introuvable' });
         }
-    })
+    });
 });
+
 
 
 // Route pour gérer la déconnexion
@@ -230,13 +293,13 @@ app.post('/submit-product', upload.single('productImage'), async (req, res) => {
         const productImage = req.file ? req.file.filename : null;
 
         const newProduct = {
-            name: name,
-            description: description,
-            echange_type: echange_type,
-            echange_contre: echange_contre,
-            category: productCategory,
-            image: productImage,
-            owner: req.session.user ? req.session.user.username : 'Anonyme'
+            name: CryptoJS.AES.encrypt(name, key).toString(),
+            description: CryptoJS.AES.encrypt(description, key).toString(),
+            echange_type: CryptoJS.AES.encrypt(echange_type, key).toString(),
+            echange_contre: CryptoJS.AES.encrypt(echange_contre, key).toString(),
+            category: CryptoJS.AES.encrypt(productCategory, key).toString(),
+            image: CryptoJS.AES.encrypt(productImage, key).toString(),
+            owner: CryptoJS.AES.encrypt(req.session.user ? req.session.user.username : 'Anonyme', key).toString()
         };
 
         const result = await saveProducts(newProduct);  // Attendez que saveProducts se termine
@@ -262,7 +325,7 @@ app.get('/produit/:product_id', (req, res) => {
         if (!row) {
             return res.status(404).json({ message: 'Produit non trouvé' });
         }
-        res.json({ product: row });
+        res.json({ product: decryptProduct(row) });
     });
 });
 
@@ -272,33 +335,38 @@ app.get('/produits', (req, res) => {
         if (err) {
             return res.status(500).json({ error: 'Erreur interne du serveur' });
         }
-        res.json({ produits: rows });
+        res.json({ produits: decryptProducts(rows) });
     });
 });
 
 app.get('/produits/:category', (req, res) => {
     const category = req.params.category;
-    db.all('SELECT id, name, echange_type, echange_contre, category, image, date_creation FROM products WHERE category = ? ORDER BY date_creation DESC', [category], (err, rows) => {
+    db.all('SELECT id, name, echange_type, echange_contre, category, image, date_creation FROM products ORDER BY date_creation DESC', [], (err, rows) => {
         if (err) {
-            console.log(err);
             return res.status(500).json({ error: 'Erreur interne du serveur' });
         }
-        res.json({ produits: rows });
+
+        rows = rows.filter(row => CryptoJS.AES.decrypt(row.category, key).toString(CryptoJS.enc.Utf8) === category);
+        res.json({ produits: decryptProducts(rows) });
     });
 });
 
 // Définir la route /user
 app.get('/user', (req, res) => {
-    const utilisateur = req.session.user.username;  // Récupère la valeur du paramètre 'id'
+    const utilisateur = req.session.user;  // Récupère la valeur du paramètre 'id'
 
-    getUser(utilisateur, (err, user) => {
+    if (!utilisateur) {
+        return res.json({ error: 'Vous devez vous connecter pour voir vos informations' });
+    }
+
+    getUser(utilisateur.username, (err, user) => {
         if (err) {
             return res.status(500).json({ error: 'Erreur interne du serveur' });
         }
         if (!user) {
             return res.status(404).json({ message: 'Utilisateur non trouvé' });
         }
-        res.json({ user: user });
+        res.json({ user: decryptUser(user) });
     });
 });
 
@@ -309,27 +377,57 @@ app.get('/my_products', (req, res) => {
         return res.status(401).json({ error: 'Vous devez vous connecter pour voir vos produits' });
     }
 
-    db.all('SELECT * FROM products WHERE owner = ? ORDER BY date_creation DESC', [utilisateur.username], (err, row) => {
+    db.all('SELECT * FROM products ORDER BY date_creation DESC', [], (err, row) => {
         if (err) {
             return res.status(500).json({ error: 'Erreur interne du serveur' });
         }
+        row.filter(annonce => CryptoJS.AES.decrypt(annonce.owner, key).toString(CryptoJS.enc.Utf8) === utilisateur.username);
         if (!row) {
             return res.json({ message: 'Vide' });
         }
-        res.json({ products: row });
+        res.json({ products: decryptProducts(row) });
     });
 });
 
 // Définir la route /my_products
 app.post('/my_products/delete', (req, res) => {
-
     const { image_id } = req.body;
 
-    db.get('DELETE FROM products WHERE id = ?', [image_id], (err) => {
+    if (!image_id) {
+        return res.status(400).json({ error: 'ID de l\'image requis' });
+    }
+
+    // Rechercher le produit avec l'ID fourni
+    db.get('SELECT * FROM products WHERE id = ?', [image_id], (err, row) => {
         if (err) {
-            return res.status(500).json({ message: "FAILURE", error: 'Erreur interne du serveur' });
+            return res.status(500).json({ error: 'Erreur interne du serveur' });
         }
-        return res.json({ message: 'SUCCESS' });
+        if (!row) {
+            return res.status(404).json({ message: 'Produit non trouvé' });
+        }
+        row = decryptProduct(row);
+        // Supprimer le produit de la base de données
+        db.run('DELETE FROM products WHERE id = ?', [image_id], (deleteErr) => {
+            if (deleteErr) {
+                return res.status(500).json({ message: 'Erreur interne du serveur' });
+            }
+
+            // Déchiffrer le nom du fichier d'image
+
+            // Construire le chemin du fichier d'image
+            console.log(__dirname)
+            const imagePath = path.join(__dirname, 'uploads/', row.image);
+
+            // Supprimer l'image associée
+            try {
+                fs.unlinkSync(imagePath);
+                return res.json({ message: 'SUCCESS' });
+            } catch (err) {
+                return res.status(500).json({ error: 'Erreur lors de la suppression de l\'image' });
+            }
+
+
+        });
     });
 });
 

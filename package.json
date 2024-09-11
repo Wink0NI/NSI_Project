@@ -13,9 +13,11 @@
   "description": "",
   "dependencies": {
     "cors": "^2.8.5",
+    "crypto-js": "^4.2.0",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "formulaire-troc": "file:",
+    "fs": "^0.0.1-security",
     "memorystore": "^1.6.7",
     "multer": "^1.4.5-lts.1",
     "nodemon": "^3.1.4",
