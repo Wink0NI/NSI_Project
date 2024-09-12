@@ -341,7 +341,7 @@ app.get('/produits', (req, res) => {
 
 app.get('/produits/:category', (req, res) => {
     const category = req.params.category;
-    db.all('SELECT id, name, echange_type, echange_contre, category, image, date_creation FROM products ORDER BY date_creation DESC', [], (err, rows) => {
+    db.all('SELECT id, name, echange_type, echange_contre, category, image, date_creation FROM products WHERE status = "AVAILABLE" ORDER BY date_creation DESC', [], (err, rows) => {
         if (err) {
             return res.status(500).json({ error: 'Erreur interne du serveur' });
         }
@@ -381,7 +381,10 @@ app.get('/my_products', (req, res) => {
         if (err) {
             return res.status(500).json({ error: 'Erreur interne du serveur' });
         }
-        row.filter(annonce => CryptoJS.AES.decrypt(annonce.owner, key).toString(CryptoJS.enc.Utf8) === utilisateur.username);
+        row = row.filter((annonce) => {
+            return CryptoJS.AES.decrypt(annonce.owner, key).toString(CryptoJS.enc.Utf8) === utilisateur.username
+        }
+        );
         if (!row) {
             return res.json({ message: 'Vide' });
         }
