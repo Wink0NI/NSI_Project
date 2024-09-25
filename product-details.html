@@ -8,6 +8,8 @@
     <title>Détails du produit</title>
     <link rel="stylesheet" href="./assets/CSS/styles.css">
     <link rel="stylesheet" href="./assets/CSS/style_product_detail.css">
+    <!-- Include Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script defer src="./assets/JS/script.js"></script>
     <script defer src="./assets/JS/script_product_detail.js"></script>
 </head>
@@ -16,7 +18,6 @@
     <header>
         <h1><a href="index.html"><span class="lettre">A</span>nnonce <span class="lettre">B</span>laise</a></h1>
 
-        <!-- Menu hamburger -->
         <div class="menu-toggle">
             <div></div>
             <div></div>
@@ -37,31 +38,34 @@
                 </li>
                 <li>
                     <div class="user-info">
-
-
-
                         <span id="btnLogin" onclick="window.location.href='login.html'">Se Connecter</span>
                         <span id="btnRegister" onclick="window.location.href='register.html'">S'inscrire</span>
-
                     </div>
                 </li>
             </ul>
-
-
-
-
         </nav>
-
-
     </header>
 
-    <main id="product-details">
-        <!-- Les détails du produit seront chargés ici -->
-    </main>
-    <footer>
-        
-    </footer>
+    <main id="product-details-container">
+        <!-- Image gallery slider -->
+        <div class="gallery-container">
+            <div id="large-image-container">
+                <img id="large-image" alt="Grande Image du produit">
+            </div>
+            <div id="image-slider" class="slider">
+                <div id="image-container"></div>
+                <button class="slider-btn prev" id="prevBtn"><i class="fas fa-chevron-left"></i></button>
+                <button class="slider-btn next" id="nextBtn"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
 
+        <div id="product-details"></div>
+            <!-- The product details will be loaded here -->
+        </div>
+    </main>
+
+    <footer>
+    </footer>
 
 </body>
 

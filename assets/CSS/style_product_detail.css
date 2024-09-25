@@ -1,0 +1,201 @@
+/* Product details styling */
+#product-details-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 1000px;
+    margin: auto;
+}
+
+
+
+div#large-image-container {
+    margin-bottom: 20px;
+    height: 400px;
+    width: 400px;
+
+    position: relative;
+    border: 1px solid #ddd;
+    overflow: hidden;
+    cursor: crosshair; /* Cursor changes on hover */
+}
+
+img#large-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+
+
+
+/* Image gallery styling */
+.gallery-container {
+    width: 100%;
+    max-width: 1000px;
+    position: relative;
+    margin: 20px auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.slider {
+    display: flex;
+    align-items: center;
+    overflow: hidden; /* Hide overflowing images */
+    position: relative;
+}
+
+/* Main image container */
+#image-container {
+    display: flex;
+    transition: transform 0.3s ease-in-out;
+    overflow-x: auto;  /* Enable horizontal scroll */
+    scroll-behavior: smooth;
+    white-space: nowrap;  /* Ensure horizontal layout of images */
+}
+
+/* Image styling inside the container */
+#image-container img {
+    height: 100px; /* Ensure consistency in image sizes */
+    margin: 0 10px; /* Provide spacing between images */
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Button styling for slider */
+.slider-btn {
+    position: absolute;
+    top: 50%; /* Vertically center the buttons */
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    border: none;
+    color: white;
+    font-size: 24px;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 50%;
+    z-index: 100; /* Ensure buttons are above other content */
+}
+
+/* Positioning for the previous button */
+.slider-btn.prev {
+    left: 10px;
+}
+
+/* Positioning for the next button */
+.slider-btn.next {
+    right: 10px;
+}
+
+
+
+/* Container for product details */
+.product-details {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/* Product name styling */
+.product-name {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+/* Owner information styling */
+.product-owner {
+    font-size: 1.2em;
+    color: #555;
+}
+
+/* Product status styling */
+.product-status {
+    font-size: 1.4em;
+    margin: 15px 0;
+}
+
+.product-status.available {
+    color: green;
+}
+
+.product-status.unavailable {
+    color: red;
+}
+
+/* Product type and exchange type styling */
+.product-type, .product-exchange {
+    font-size: 1.1em;
+    color: #333;
+}
+
+/* Add some spacing between the sections */
+.product-details p {
+    margin: 5px 0;
+}
+
+
+
+/* Mobile responsiveness for smaller screens */
+@media (max-width: 768px) {
+    /* Adjust product details container padding */
+    #product-details-container {
+        padding: 10px;
+    }
+
+    /* Ensure gallery container fits smaller screens */
+    .gallery-container {
+        height: 100%;
+    }
+
+    /* Reduce image size for mobile view */
+    #image-container img {
+        height: 75px;
+    }
+
+    /* Adjust the position of the previous button */
+    .slider-btn.prev {
+        left: 10px;
+    }
+
+    /* Adjust the position of the next button */
+    .slider-btn.next {
+        right: 10px;
+    }
+
+    div#large-image-container {
+        height: 250px;
+        width: 250px;
+    }
+    
+    img#large-image {
+        width: 250px;
+    }
+
+    .product-details {
+        padding: 15px;
+        font-size: 0.9em;
+    }
+
+    .product-name {
+        font-size: 1.5em;
+    }
+
+    .product-status {
+        font-size: 1.2em;
+    }
+}
