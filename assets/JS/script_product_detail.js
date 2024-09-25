@@ -77,8 +77,12 @@ function loadProductDetails() {
                             <strong>Type :</strong> ${data.product.echange_type}<br>
                             ${data.product.echange_type === "Troc" ? "<strong>Contre :</strong>" + data.product.echange_contre + "<br>" : ""}
                             <strong>Disponibilité :</strong> ${data.product.status === "AVAILABLE" ? "Disponible" : "Plus en stock"}<br>
-                            ${data.product.image ? `<img src="uploads/${data.product.image}" alt="Product image" style="max-width: 200px;"><br>` : ''}
                         `;
+
+                        data.product.images.forEach(element => {
+                            detailsContainer.innerHTML += `<img src="uploads/${element.image}" alt="Image du produit" style="max-width: 100px;"><br>`;
+                            
+                        });
 
                     fetch(`http://localhost:3000/user/${data.product.owner}`)
                         .then(response => response.json())

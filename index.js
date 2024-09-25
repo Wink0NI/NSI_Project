@@ -36,16 +36,17 @@ app.use(session({
     saveUninitialized: false,
 }));
 
-// Configuration de multer pour gérer les fichiers téléchargés
+// Set storage engine
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'uploads/');
+        cb(null, 'uploads/'); // Directory where files will be saved
     },
     filename: function (req, file, cb) {
-        cb(null, Date.now() + path.extname(file.originalname));
+        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
     }
 });
 
+// Initialize multer with storage configuration
 const upload = multer({ storage: storage });
 
 
@@ -89,8 +90,8 @@ async function saveProducts(products) {
         }
 
         db.run(
-            `INSERT INTO products (id, name, description, echange_type, echange_contre, category, image, owner, date_creation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [id, products.name, products.description, products.echange_type, products.echange_contre, products.category, products.image, products.owner, Date.now()],
+            `INSERT INTO products (id, name, description, echange_type, echange_contre, category, owner, date_creation) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [id, products.name, products.description, products.echange_type, products.echange_contre, products.category, products.owner, Date.now()],
             function (err) {
                 if (err) {
                     return { message: "FAILURE" };
@@ -98,6 +99,19 @@ async function saveProducts(products) {
 
             }
         );
+
+        products.images.forEach(image => {
+            db.run(
+                `INSERT INTO post_image (post_id, image) VALUES (?, ?)`,
+                [id, image], // Include the image parameter here
+                function (err) {
+                    if (err) {
+                        console.error(err); // Log the error for debugging
+                        return { message: "FAILURE" };
+                    }
+                }
+            );
+        });
 
         return { id: id, message: "SUCCESS" };
     } catch (err) {
@@ -183,25 +197,53 @@ function decryptUser(user) {
 
 }
 
-function decryptProduct(product) {
+async function decryptProduct(product) {
+    const decryptField = (field) => field ? CryptoJS.AES.decrypt(field, key).toString(CryptoJS.enc.Utf8) : "";
 
-    product.name = product.name ? CryptoJS.AES.decrypt(product.name, key).toString(CryptoJS.enc.Utf8) : "";
-    product.description = product.description ? CryptoJS.AES.decrypt(product.description, key).toString(CryptoJS.enc.Utf8) : "";
-    product.echange_type = product.echange_type ? CryptoJS.AES.decrypt(product.echange_type, key).toString(CryptoJS.enc.Utf8) : "";
-    product.echange_contre = product.echange_contre ? CryptoJS.AES.decrypt(product.echange_contre, key).toString(CryptoJS.enc.Utf8) : "";
-    product.category = product.category ? CryptoJS.AES.decrypt(product.category, key).toString(CryptoJS.enc.Utf8) : "";
-    product.image = product.image ? CryptoJS.AES.decrypt(product.image, key).toString(CryptoJS.enc.Utf8) : "";
-    product.owner = product.owner ? CryptoJS.AES.decrypt(product.owner, key).toString(CryptoJS.enc.Utf8) : "";
+    // Decrypt product fields
+    product.name = decryptField(product.name);
+    product.description = decryptField(product.description);
+    product.echange_type = decryptField(product.echange_type);
+    product.echange_contre = decryptField(product.echange_contre);
+    product.category = decryptField(product.category);
+    product.owner = decryptField(product.owner);
 
-    return product;
-}
+    // Retrieve images associated with the product
+    try {
+        const images = await new Promise((resolve, reject) => {
+            db.all('SELECT image FROM post_image WHERE post_id = ?', [product.id], (err, rows) => {
+                if (err) {
+                    return reject(new Error('Erreur interne du serveur: ' + err.message));
+                }
+                resolve(rows); // rows will contain an array of images
+            });
+        });
 
-function decryptProducts(products) {
-    for (let i = 0; i < products.length; i++) {
-        products[i] = decryptProduct(products[i]);
+        images.forEach(image => {
+            image.image = decryptField(image.image);
+        });
+
+        product.images = images; // Assign images to the product
+        return product; // Return the decrypted product
+
+    } catch (error) {
+        console.error(error.message); // Log error for debugging
+        throw error; // Re-throw error for handling in the calling function
     }
-    return products;
+
+    
 }
+
+async function decryptProducts(products) {
+    try {
+        const decryptedProducts = await Promise.all(products.map(product => decryptProduct(product)));
+        return decryptedProducts; // Return all decrypted products
+    } catch (error) {
+        console.error(error.message); // Log error for debugging
+        throw error; // Re-throw error for handling in the calling function
+    }
+}
+
 
 // Route pour gérer la connexion
 app.post('/login', (req, res) => {
@@ -287,10 +329,12 @@ app.get('/logout', (req, res) => {
 });
 
 // Route pour gérer la soumission d'une nouvelle annonce
-app.post('/submit-product', upload.single('productImage'), async (req, res) => {
+app.post('/submit-product', upload.array('productImage', 32), async (req, res) => { // 10 is the max number of files you want to allow
     try {
         const { name, description, echange_type, echange_contre, productCategory } = req.body;
-        const productImage = req.file ? req.file.filename : null;
+        const productImages = req.files ? req.files.map(file => CryptoJS.AES.encrypt(file.filename, key).toString()) : [];
+
+
 
         const newProduct = {
             name: CryptoJS.AES.encrypt(name, key).toString(),
@@ -298,11 +342,11 @@ app.post('/submit-product', upload.single('productImage'), async (req, res) => {
             echange_type: CryptoJS.AES.encrypt(echange_type, key).toString(),
             echange_contre: CryptoJS.AES.encrypt(echange_contre, key).toString(),
             category: CryptoJS.AES.encrypt(productCategory, key).toString(),
-            image: CryptoJS.AES.encrypt(productImage, key).toString(),
+            images: productImages,
             owner: CryptoJS.AES.encrypt(req.session.user ? req.session.user.username : 'Anonyme', key).toString()
         };
 
-        const result = await saveProducts(newProduct);  // Attendez que saveProducts se termine
+        const result = await saveProducts(newProduct);
 
         if (result.message === "SUCCESS") {
             return res.json({ id: result.id, message: 'Produit soumis avec succès !' });
@@ -314,42 +358,109 @@ app.post('/submit-product', upload.single('productImage'), async (req, res) => {
     }
 });
 
+
 // Route pour récupérer les informations d'un produit par son ID
-app.get('/produit/:product_id', (req, res) => {
+app.get('/produit/:product_id', async (req, res) => {
     const productId = req.params.product_id;
 
-    db.get('SELECT * FROM products WHERE id = ?', [productId], (err, row) => {
-        if (err) {
-            return res.status(500).json({ error: 'Erreur interne du serveur' });
-        }
+    try {
+        // Fetch the product from the database
+        const row = await new Promise((resolve, reject) => {
+            db.get('SELECT * FROM products WHERE id = ?', [productId], (err, row) => {
+                if (err) {
+                    return reject(new Error('Erreur interne du serveur'));
+                }
+                resolve(row);
+            });
+        });
+
+        // Handle case where the product is not found
         if (!row) {
             return res.status(404).json({ message: 'Produit non trouvé' });
         }
-        res.json({ product: decryptProduct(row) });
-    });
+
+        // Decrypt the product
+        const decryptedProduct = await decryptProduct(row);
+
+        // Return the decrypted product
+        return res.json({ product: decryptedProduct });
+
+    } catch (error) {
+        console.error('Error fetching product:', error.message);
+        return res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
 });
 
 // Route pour récupérer la liste de tous les produits avec les informations price, type et image
-app.get('/produits', (req, res) => {
-    db.all('SELECT id, name, echange_type, image FROM products WHERE status = "AVAILABLE" ORDER BY date_creation DESC', [], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: 'Erreur interne du serveur' });
-        }
-        res.json({ produits: decryptProducts(rows) });
-    });
+app.get('/produits', async (req, res) => {
+    try {
+        // Fetch available products from the database
+        const rows = await new Promise((resolve, reject) => {
+            const query = `
+                SELECT id, name, echange_type 
+                FROM products 
+                WHERE status = "AVAILABLE" 
+                ORDER BY date_creation DESC
+            `;
+            db.all(query, [], (err, rows) => {
+                if (err) {
+                    return reject(new Error('Erreur interne du serveur' + err.message));
+                }
+                resolve(rows);
+            });
+        });
+
+        // Decrypt the product details
+        const decryptedProducts = await decryptProducts(rows);
+
+        // Return the decrypted products
+        return res.json({ produits: decryptedProducts });
+
+    } catch (error) {
+        console.error('Error fetching products:', error.message);
+        return res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
 });
 
-app.get('/produits/:category', (req, res) => {
+
+app.get('/produits/:category', async (req, res) => {
     const category = req.params.category;
-    db.all('SELECT id, name, echange_type, echange_contre, category, image, date_creation FROM products WHERE status = "AVAILABLE" ORDER BY date_creation DESC', [], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: 'Erreur interne du serveur' });
-        }
 
-        rows = rows.filter(row => CryptoJS.AES.decrypt(row.category, key).toString(CryptoJS.enc.Utf8) === category);
-        res.json({ produits: decryptProducts(rows) });
-    });
+    try {
+        // Fetch products directly from the database, filtering by decrypted category
+        const rows = await new Promise((resolve, reject) => {
+            const query = `
+                SELECT id, name, echange_type, echange_contre, category, date_creation 
+                FROM products 
+                WHERE status = "AVAILABLE" 
+                ORDER BY date_creation DESC
+            `;
+            db.all(query, [], (err, rows) => {
+                if (err) {
+                    return reject(new Error('Erreur interne du serveur'));
+                }
+                resolve(rows);
+            });
+        });
+
+        // Filter rows based on decrypted category
+        const filteredRows = rows.filter(row => {
+            const decryptedCategory = CryptoJS.AES.decrypt(row.category, key).toString(CryptoJS.enc.Utf8);
+            return decryptedCategory === category;
+        });
+
+        // Decrypt the product details
+        const decryptedProducts = await decryptProducts(filteredRows);
+
+        // Return the filtered and decrypted products
+        return res.json({ produits: decryptedProducts });
+
+    } catch (error) {
+        console.error('Error fetching products:', error.message);
+        return res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
 });
+
 
 // Définir la route /user
 app.get('/user', (req, res) => {
@@ -371,67 +482,120 @@ app.get('/user', (req, res) => {
 });
 
 // Définir la route /my_products
-app.get('/my_products', (req, res) => {
-    const utilisateur = req.session.user;  // Récupère la valeur du paramètre 'id'
+app.get('/my_products', async (req, res) => {
+    const utilisateur = req.session.user;  // Get the user from the session
     if (!utilisateur) {
         return res.status(401).json({ error: 'Vous devez vous connecter pour voir vos produits' });
     }
 
-    db.all('SELECT * FROM products ORDER BY date_creation DESC', [], (err, row) => {
-        if (err) {
-            return res.status(500).json({ error: 'Erreur interne du serveur' });
+    try {
+        // Fetch all products owned by the user from the database
+        const rows = await new Promise((resolve, reject) => {
+            const query = 'SELECT * FROM products ORDER BY date_creation DESC';
+            db.all(query, [], (err, rows) => {
+                if (err) {
+                    return reject(new Error('Erreur interne du serveur'));
+                }
+                resolve(rows);
+            });
+        });
+
+        // Filter rows based on the owner
+        const filteredRows = rows.filter((annonce) => {
+            const decryptedOwner = CryptoJS.AES.decrypt(annonce.owner, key).toString(CryptoJS.enc.Utf8);
+            return decryptedOwner === utilisateur.username;
+        });
+
+        // Check if no products were found
+        if (filteredRows.length === 0) {
+            return res.json({ message: 'Aucun produit trouvé.' });
         }
-        row = row.filter((annonce) => {
-            return CryptoJS.AES.decrypt(annonce.owner, key).toString(CryptoJS.enc.Utf8) === utilisateur.username
-        }
-        );
-        if (!row) {
-            return res.json({ message: 'Vide' });
-        }
-        res.json({ products: decryptProducts(row) });
-    });
+
+        // Decrypt the product details
+        const decryptedProducts = await decryptProducts(filteredRows);
+        return res.json({ products: decryptedProducts });
+
+    } catch (error) {
+        console.error('Error fetching user products:', error.message);
+        return res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
 });
 
+
 // Définir la route /my_products
-app.post('/my_products/delete', (req, res) => {
+app.post('/my_products/delete', async (req, res) => {
     const { image_id } = req.body;
 
     if (!image_id) {
         return res.status(400).json({ error: 'ID de l\'image requis' });
     }
 
-    // Rechercher le produit avec l'ID fourni
-    db.get('SELECT * FROM products WHERE id = ?', [image_id], (err, row) => {
-        if (err) {
-            return res.status(500).json({ error: 'Erreur interne du serveur' });
-        }
-        if (!row) {
+    try {
+        // Fetch the product with the provided ID
+        const productRow = await new Promise((resolve, reject) => {
+            db.get('SELECT * FROM products WHERE id = ?', [image_id], (err, row) => {
+                if (err) {
+                    return reject(new Error('Erreur interne du serveur'));
+                }
+                resolve(row);
+            });
+        });
+
+        if (!productRow) {
             return res.status(404).json({ message: 'Produit non trouvé' });
         }
-        row = decryptProduct(row);
-        // Supprimer le produit de la base de données
-        db.run('DELETE FROM products WHERE id = ?', [image_id], (deleteErr) => {
-            if (deleteErr) {
-                return res.status(500).json({ message: 'Erreur interne du serveur' });
-            }
 
-            // Déchiffrer le nom du fichier d'image
+        // Decrypt the product details
+        const decryptedProduct = decryptProduct(productRow);
 
-            // Construire le chemin du fichier d'image
-            console.log(__dirname)
-            const imagePath = path.join(__dirname, 'uploads/', row.image);
+        // Fetch associated images from the post_image table
+        const images = await new Promise((resolve, reject) => {
+            db.all('SELECT * FROM post_image WHERE post_id = ?', [image_id], (err, rows) => {
+                if (err) {
+                    return reject(new Error('Erreur interne du serveur'));
+                }
+                resolve(rows);
+            });
+        });
 
-            // Supprimer l'image associée
+        // Delete images from the post_image table
+        await new Promise((resolve, reject) => {
+            db.run('DELETE FROM post_image WHERE post_id = ?', [image_id], function(err) {
+                if (err) {
+                    return reject(new Error('Erreur interne du serveur'));
+                }
+                resolve(this.changes); // number of rows deleted
+            });
+        });
+
+        // Delete image files from the file system
+        images.forEach(image => {
+            image.image = CryptoJS.AES.decrypt(image, key).toString(CryptoJS.enc.Utf8)
+            
+            const imagePath = path.join(__dirname, 'uploads', image.image); // Assuming 'image' is the file name in the post_image table
             try {
                 fs.unlinkSync(imagePath);
-                return res.json({ message: 'SUCCESS' });
             } catch (err) {
-                return res.status(500).json({ error: 'Erreur lors de la suppression de l\'image' });
+                console.error(`Erreur lors de la suppression de l'image ${image.image}: ${err.message}`);
             }
-
-
         });
-    });
+
+        // Delete the product from the products table
+        await new Promise((resolve, reject) => {
+            db.run('DELETE FROM products WHERE id = ?', [image_id], (deleteErr) => {
+                if (deleteErr) {
+                    return reject(new Error('Erreur interne du serveur'));
+                }
+                resolve();
+            });
+        });
+
+        return res.json({ message: 'Produit et images supprimés avec succès' });
+
+    } catch (error) {
+        console.error('Erreur lors de la suppression du produit:', error.message);
+        return res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
 });
 
 // Définir la route /my_products

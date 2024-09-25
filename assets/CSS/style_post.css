@@ -42,11 +42,7 @@
     position: relative;
 }
 
-.product-picture img {
-    display: block;
-    max-width: 100%;
-    height: auto;
-}
+
 
 .overlay {
     position: absolute;
@@ -67,8 +63,42 @@
 }
 
 .product-picture input[type="file"] {
-    opacity: 0;
+    display: none;
 }
+
+
+
+#upload-btn {
+    border: 2px solid #007BFF; /* Border color for the button */
+    border-radius: 5px; /* Rounded corners */
+    background-color: white; /* Background color */
+    width: 50px; /* Set width for the button */
+    height: 50px; /* Set height for the button */
+    display: flex; /* Center icon */
+    justify-content: center; /* Center icon */
+    align-items: center; /* Center icon */
+    transition: background-color 0.3s; /* Smooth transition for background */
+}
+
+#upload-btn:hover {
+    background-color: #e7f1ff; /* Light background on hover */
+}
+
+#image-container {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 10px; /* Space above the images */
+}
+
+#image-container img {
+    height: 100px; /* Size of images */
+    width: 100px; /* Size of images */
+    object-fit: cover; /* Ensure images fit within the size */
+    margin-right: 5px; /* Space between images */
+    margin-bottom: 5px; /* Space below images */
+}
+
+
 
 .fa {
     margin-right: 10px;

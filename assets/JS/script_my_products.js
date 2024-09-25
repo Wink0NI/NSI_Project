@@ -64,7 +64,7 @@ fetch('http://localhost:3000/my_products', {
                 <strong>Type :</strong> ${product.echange_type}<br>
                 <strong>Contre :</strong> ${product.echange_contre}<br>
                 <strong>Description :</strong> ${product.description}<br>
-                <img src="uploads/${product.image}" alt="Image du produit" style="max-width: 100px;"><br>
+                <img src="uploads/${product.images[0].image}" alt="Image du produit" style="max-width: 100px;"><br>
                 <strong>Date :</strong> ${Date(product.date_creation)}<br>
                 <strong>statut :</strong> ${product.status === "AVAILABLE" ? "En cours" : "Clôturé"}<br>
                 <button class="link_button">Voir les détails</button><br>

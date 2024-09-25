@@ -129,7 +129,7 @@ async function loadProducts(category) {
             productDiv.className = 'product';
 
             const productImage = document.createElement('img');
-            productImage.src = `/uploads/${product.image}`;
+            productImage.src = `/uploads/${product.images[0].image}`;
             productImage.alt = product.name;
 
             const productType = document.createElement('h2');

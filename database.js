@@ -20,7 +20,6 @@ db.serialize(() => {
 	"echange_type"	TEXT NOT NULL,
 	"echange_contre"	TEXT NOT NULL,
 	"category"	TEXT NOT NULL,
-	"image"	TEXT NOT NULL,
 	"owner"	TEXT NOT NULL,
 	"date_creation"	date NOT NULL,
 	"status"	TEXT NOT NULL DEFAULT 'AVAILABLE',
@@ -42,6 +41,18 @@ db.serialize(() => {
     "priority"	TEXT NOT NULL DEFAULT 'admin',
 	FOREIGN KEY("user") REFERENCES "users"("username")
 );`)
+	db.run(`
+    CREATE TABLE IF NOT EXISTS "post_image" (
+	"post_id"	TEXT NOT NULL,
+	"image"	TEXT NOT NULL,
+	PRIMARY KEY("post_id","image")
+);
+);`)
+
+
+
 });
+
+
 
 module.exports = db;

@@ -47,15 +47,18 @@
             <label for="product-name">Nom du produit:</label>
             <input id="product-name" name="name" type="text" required>
 
-            <label for="product-image">Image:</label>
+            <label for="product-image">Images:</label>
             <div class="product-picture" id="productPicture" style="margin-top: 5px;">
-                <img id="product-image-display" style="height: 100px;" src="./assets/images/add_image.png"
-                    alt="Image par défaut">
-                <div class="overlay">
-                    <input style="font-size: 15px;" type="file" id="product-image" name="productImage" accept="image/*"
-                        onchange="display_img_product()" required><br>
-                </div>
+                <input type="file" id="product-image" name="productImage" accept="image/*" multiple
+                    onchange="displayImages()">
+                <div id="image-container"></div>
+                <button type="button" id="upload-btn" onclick="document.getElementById('product-image').click();"
+                    style="font-size: 15px; margin-top: 5px; border: none; background-color: transparent; cursor: pointer; position: relative; padding: 10px;">
+                    <span style="font-size: 30px; color: #007BFF;">+</span>
+                </button>
+
             </div>
+
 
             <label for="echange-type">Type d'échange:</label>
             <select id="echange-type" name="echange_type" onchange="price_option_change()">
@@ -71,7 +74,7 @@
                 style="width: 350px; height: 200px; font-family: cursive; margin-top: 5px;"
                 placeholder="Mon objet est très grand et sert à faire des frites." required></textarea>
 
-            
+
 
             <label for="productCategory"> Type de produit :</label>
             <i id="ProductTypeIcon" class="fa fa-question" aria-hidden="true"
