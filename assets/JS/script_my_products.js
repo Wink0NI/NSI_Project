@@ -69,6 +69,7 @@ fetch('http://localhost:3000/my_products', {
                 <strong>statut :</strong> ${product.status === "AVAILABLE" ? "En cours" : "Clôturé"}<br>
                 <button class="link_button">Voir les détails</button><br>
                 <button class="delete_product">Supprimer</button><br>
+                <button class="edit_product">Modifier</button><br>
             `;
 
                 // Append the product div to the container
@@ -106,12 +107,12 @@ fetch('http://localhost:3000/my_products', {
                         .catch(error => console.error('Erreur lors de la suppression de l\'article:', error));
                 });
 
-                const edit_button = document.createElement('button');
-                edit_button.classList.add('edit_button');
-                edit_button.innerHTML = product.status === "AVAILABLE" ? "Clôturer l'article" : "Remettre l'article";
-                productDiv.appendChild(edit_button);
+                const edit_status_button = document.createElement('button');
+                edit_status_button.classList.add('edit_status_button');
+                edit_status_button.innerHTML = product.status === "AVAILABLE" ? "Clôturer l'article" : "Remettre l'article";
+                productDiv.appendChild(edit_status_button);
 
-                edit_button.addEventListener('click', function (e) {
+                edit_status_button.addEventListener('click', function (e) {
                     e.preventDefault();
                     let link = product.status === "AVAILABLE" ? "http://localhost:3000/my_products/edit_status/finished" : "http://localhost:3000/my_products/edit_status/available";
                     fetch(link, {
@@ -134,7 +135,16 @@ fetch('http://localhost:3000/my_products', {
                         })
                         .catch(error => console.error('Erreur lors de la suppression de l\'article:', error));
                 });
+
+                const edit_button = productDiv.querySelector('.edit_product');
+                edit_button.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    // Open the edit product page in a new tab
+                    window.open(`edit-product.html?id=${product.id}`, '_blank');
+                });
+
             });
+
 
         } else {
             productsContainer.innerHTML = '<p>Aucune annonce trouvée.</p>';
