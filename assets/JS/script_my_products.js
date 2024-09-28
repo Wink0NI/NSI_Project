@@ -4,7 +4,7 @@ const $logout = document.querySelector("div.user-info>span#btnLogout");
 const $user_info = document.querySelector("div.user-info");
 
 let currentPage = 1;
-const productsPerPage = 2; // Adjust the number of products per page
+const productsPerPage = 10; // Adjust the number of products per page
 
 // Vérifier si l'utilisateur est connecté
 fetch('http://localhost:3000/check-session', {
