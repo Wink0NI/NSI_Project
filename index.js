@@ -170,8 +170,8 @@ function getConnection(user, password, callback) {
 }
 
 
-function addUser(username, password, email, tel, callback) {
-    db.run('INSERT INTO users (username, password, email, tel) VALUES (?, ?, ?, ?)', [username, password, email, tel], (err) => {
+function addUser(username, password, email, tel, instagram, callback) {
+    db.run('INSERT INTO users (username, password, email, tel, instagram) VALUES (?, ?, ?, ?, ?)', [username, password, email, tel, instagram], (err) => {
         if (err) {
             return callback(err);
         }
@@ -273,7 +273,7 @@ app.post('/login', (req, res) => {
 
 // Route pour gérer la connexion
 app.post('/register', (req, res) => {
-    const { username, password, email, tel } = req.body;
+    const { username, password, email, tel, instagram } = req.body;
 
 
     getUser(username, (err, user) => {
@@ -293,6 +293,7 @@ app.post('/register', (req, res) => {
             CryptoJS.AES.encrypt(password, key).toString(),
             CryptoJS.AES.encrypt(email, key).toString(),
             CryptoJS.AES.encrypt(tel, key).toString(),
+            CryptoJS.AES.encrypt(instagram, key).toString(),
             (err) => {
                 if (err) {
                     return res.status(500).json({ message: 'Error registering user' });

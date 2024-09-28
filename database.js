@@ -30,8 +30,9 @@ db.serialize(() => {
     CREATE TABLE IF NOT EXISTS "users" (
 	"username"	TEXT NOT NULL,
 	"password"	TEXT NOT NULL,
-	"email"	TEXT NOT NULL UNIQUE,
-	"tel"	TEXT NOT NULL,
+	"email"	TEXT UNIQUE,
+	"tel"	TEXT,
+	"instagram"	TEXt,
 	PRIMARY KEY("username")
 );
   `);
