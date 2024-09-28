@@ -193,6 +193,7 @@ function decryptUser(user) {
     user.password = "SECRET";
     user.email = user.email ? CryptoJS.AES.decrypt(user.email, key).toString(CryptoJS.enc.Utf8) : "";
     user.tel = user.tel ? CryptoJS.AES.decrypt(user.tel, key).toString(CryptoJS.enc.Utf8) : "";
+    user.instagram = user.instagram ? CryptoJS.AES.decrypt(user.instagram, key).toString(CryptoJS.enc.Utf8) : "";
     return user;
 
 }
