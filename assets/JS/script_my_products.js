@@ -86,40 +86,60 @@ function loadMyProducts(page = 1) {
                         window.open(`product-details.html?id=${product.id}`, '_blank');
                     });
 
-                    const deleteButton = productDiv.querySelector('.delete_product');
-                    deleteButton.addEventListener("click", function (event) {
-                        event.preventDefault();
-                        deleteProduct(product.id);  // Create a function to handle delete
-                    });
+                     // Add event listener to the delete button
+                const deleteButton = productDiv.querySelector('.delete_product');
+                deleteButton.addEventListener("click", function (event) {
+                    event.preventDefault();
 
-                    const edit_status_button = document.createElement('button');
-                    edit_status_button.classList.add('edit_status_button');
-                    edit_status_button.innerHTML = product.status === "AVAILABLE" ? "Clôturer l'article" : "Remettre l'article";
-                    productDiv.appendChild(edit_status_button);
-
-                    edit_status_button.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        let link = product.status === "AVAILABLE" ? "http://localhost:3000/my_products/edit_status/finished" : "http://localhost:3000/my_products/edit_status/available";
-                        fetch(link, {
-                            method: 'POST',
-                            credentials: 'include',
-                            headers: {
-                                'Content-Type': 'application/json'  // Specify JSON format
-                            },
-                            body: JSON.stringify({ image_id: product.id })  // Send product ID
-
+                    // Send POST request to delete the product
+                    fetch("http://localhost:3000/my_products/delete", {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json'  // Specify JSON format
+                        },
+                        body: JSON.stringify({ image_id: product.id })  // Send product ID
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.message === "FAILURE") {
+                                alert(data.error);
+                            } else {
+                                alert("Article supprimé avec succès...");
+                                window.location.reload();  // Reload the page to update the product list
+                            }
                         })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.message === "FAILURE") {
-                                    alert(data.error);
-                                } else {
-                                    alert("Article modifié avec succès...");
-                                    window.location.reload();  // Reload the page to update the product list
-                                }
-                            })
-                            .catch(error => console.error('Erreur lors de la suppression de l\'article:', error));
-                    });
+                        .catch(error => console.error('Erreur lors de la suppression de l\'article:', error));
+                });
+
+                const edit_status_button = document.createElement('button');
+                edit_status_button.classList.add('edit_status_button');
+                edit_status_button.innerHTML = product.status === "AVAILABLE" ? "Clôturer l'article" : "Remettre l'article";
+                productDiv.appendChild(edit_status_button);
+
+                edit_status_button.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    let link = product.status === "AVAILABLE" ? "http://localhost:3000/my_products/edit_status/finished" : "http://localhost:3000/my_products/edit_status/available";
+                    fetch(link, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json'  // Specify JSON format
+                        },
+                        body: JSON.stringify({ image_id: product.id })  // Send product ID
+
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.message === "FAILURE") {
+                                alert(data.error);
+                            } else {
+                                alert("Article modifié avec succès...");
+                                window.location.reload();  // Reload the page to update the product list
+                            }
+                        })
+                        .catch(error => console.error('Erreur lors de la suppression de l\'article:', error));
+                });
 
                     const edit_button = productDiv.querySelector('.edit_product');
                     edit_button.addEventListener('click', function (e) {
