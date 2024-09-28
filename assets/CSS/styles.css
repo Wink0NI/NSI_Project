@@ -59,6 +59,8 @@ nav ul {
     display: flex;
     list-style: none;
     padding: 15px 0;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
 }
 
 nav ul li {
@@ -143,9 +145,13 @@ nav ul li div.user-info span {
 }
 
 /* Ajustements spécifiques pour la couleur des liens dans le menu hamburger */
-@media (max-width: 768px) {
+@media (max-width: 1600px) {
     nav ul li a {
         color: #BEE9E8; /* Couleur des liens dans le menu hamburger */
+    }
+
+    header {
+        justify-content: center;
     }
 }
 

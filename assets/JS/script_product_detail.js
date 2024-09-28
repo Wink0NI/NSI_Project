@@ -4,6 +4,25 @@ const $logout = document.querySelector("div.user-info>span#btnLogout");
 const $user_info = document.querySelector("div.user-info");
 const $annonce_zone = document.getElementById("annonce-bouton");
 
+// Image slider functionality using scrollLeft
+const slider = document.getElementById('image-container');
+const nextBtn = document.getElementById('nextBtn');
+const prevBtn = document.getElementById('prevBtn');
+
+// Function to handle button visibility
+function updateButtonVisibility() {
+
+    // Hide buttons when window width is less than 768 and slider width is less than 300
+    if ((window.innerWidth < 768 && slider.offsetWidth >= 299) || (window.innerWidth < 1100 && slider.offsetWidth >= 699) || (window.innerWidth > 1100 && slider.offsetWidth >= 999)) {
+        nextBtn.style.display = 'block';
+        prevBtn.style.display = 'block';
+    } else {
+        nextBtn.style.display = 'none';
+        prevBtn.style.display = 'none';
+
+    }
+}
+
 // Vérifier si l'utilisateur est connecté
 fetch('http://localhost:3000/check-session', {
     credentials: 'include'
@@ -113,6 +132,9 @@ function loadProductDetails() {
                                     <strong>Numéro de téléphone :</strong> ${owner_data.tel || "Aucun"}<br>
                                     <strong>Email :</strong> ${owner_data.email || "Aucun"}<br>
                                 ` : "";
+
+                            // Call the function once initially to set the correct state
+                            updateButtonVisibility();
                         })
                         .catch(error => {
                             console.error('Error:', error);
@@ -121,28 +143,37 @@ function loadProductDetails() {
                 } else {
                     detailsContainer.innerHTML = '<p>Produit non trouvé.</p>';
                 }
+
+
+
+
+                // Add an event listener to update button visibility on window resize
+                window.addEventListener('resize', updateButtonVisibility);
+
+
+                nextBtn.addEventListener('click', () => {
+                    slider.scrollLeft += 200; // Move 200px to the right
+                });
+
+                prevBtn.addEventListener('click', () => {
+                    slider.scrollLeft -= 200; // Move 200px to the left
+                });
             })
             .catch(error => {
                 console.error('Error:', error);
                 document.getElementById('product-details').innerHTML = 'Erreur lors du chargement des détails du produit.';
             });
+
     } else {
         document.getElementById('product-details').innerHTML = '<p>ID du produit manquant.</p>';
     }
 }
 
-// Image slider functionality using scrollLeft
-const slider = document.getElementById('image-container');
-const nextBtn = document.getElementById('nextBtn');
-const prevBtn = document.getElementById('prevBtn');
 
-nextBtn.addEventListener('click', () => {
-    slider.scrollLeft += 200; // Move 200px to the right
-});
 
-prevBtn.addEventListener('click', () => {
-    slider.scrollLeft -= 200; // Move 200px to the left
-});
+
+
+
 
 
 

@@ -44,8 +44,7 @@ db.serialize(() => {
 	db.run(`
     CREATE TABLE IF NOT EXISTS "post_image" (
 	"post_id"	TEXT NOT NULL,
-	"image"	TEXT NOT NULL,
-	PRIMARY KEY("post_id","image")
+	"image"	TEXT NOT NULL
 );
 );`)
 
