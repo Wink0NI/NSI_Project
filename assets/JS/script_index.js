@@ -4,6 +4,12 @@ const $logout = document.querySelector("div.user-info>span#btnLogout");
 const $user_info = document.querySelector("div.user-info");
 const $annonce_zone = document.getElementById("annonce-bouton");
 
+const categories = document.querySelectorAll('nav>ul>li>a.category');
+const nbre_produit = document.getElementById("nbre-produit");
+
+let currentPage = 1; // Start with the first page
+const productsPerPage = 20; // You can adjust the number of products per page
+
 // Vérifier si l'utilisateur est connecté
 fetch('http://localhost:3000/check-session', {
     credentials: 'include'
@@ -106,11 +112,14 @@ function type_option_change() {
 
 
 
-async function loadProducts(category) {
-    let link = "http://localhost:3000/produits"
+
+
+async function loadProducts(category, page = 1) {
+    let link = `http://localhost:3000/produits?page=${page}&limit=${productsPerPage}`;
     if (category) {
-        link += `/${category}`;
+        link += `&category=${category}`;
     }
+
     try {
         const response = await fetch(link);
         if (!response.ok) {
@@ -120,10 +129,10 @@ async function loadProducts(category) {
 
         const postSection = document.querySelector('section.post');
 
-        // Vider la section post avant d'ajouter de nouveaux éléments
+        // Clear the section before adding new products
         postSection.innerHTML = '';
 
-        // Boucle pour chaque produit et création des éléments HTML correspondants
+        // Loop through each product and create corresponding HTML elements
         data.produits.forEach(product => {
             const productDiv = document.createElement('div');
             productDiv.className = 'product';
@@ -147,21 +156,26 @@ async function loadProducts(category) {
             productDiv.appendChild(productPrice);
 
             postSection.appendChild(productDiv);
+
+
         });
+
+        nbre_produit.textContent = `${data.totalProducts} ${data.totalProducts < 2 ? "produit trouvée" : "produits trouvées"}`;
+        nbre_produit.setAttribute("value", data.totalProducts);
+
         if (data.produits.length === 0) {
             postSection.innerHTML = "Vide...";
         }
+
+        // Call the function to handle pagination controls
+        setupPaginationControls(data.totalPages);
+
     } catch (err) {
         console.error(err.message);
     }
 }
 
-const categories = document.querySelectorAll('nav>ul>li>a.category');
-categories.forEach(category => {
-    category.addEventListener('click', () => {
-        loadProducts(category.getAttribute("value"));
-    });
-});
+
 
 
 
@@ -174,6 +188,54 @@ window.onload = function () {
     const hash = window.location.hash; // Ex : #jeux
     const category = hash ? hash.substring(1) : null; // Retirer le '#' du début
 
+
     // Appeler la fonction avec la catégorie extraite
     loadProducts(category);
 };
+
+function setupPaginationControls(totalPages) {
+    const prevButton = document.getElementById('prevPage');
+    const nextButton = document.getElementById('nextPage');
+    const pageInfo = document.getElementById('pageInfo');
+    const pageButtons = document.getElementById('pagination-controls');
+
+    if (parseInt(nbre_produit.getAttribute("value")) === 0) pageButtons.style.display = 'none';
+    else {
+        pageButtons.style.display = 'block';
+
+        // Update page info
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+
+        // Disable/enable buttons based on the current page
+        prevButton.disabled = currentPage === 1;
+        nextButton.disabled = currentPage === totalPages;
+
+        // Add click event listeners to change pages
+        prevButton.onclick = () => {
+            if (currentPage > 1) {
+                currentPage--;
+                loadProducts(currentCategory, currentPage); // Load previous page
+            }
+        };
+
+        nextButton.onclick = () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadProducts(currentCategory, currentPage); // Load next page
+            }
+        };
+    }
+}
+
+let currentCategory = '';
+
+categories.forEach(link => {
+    link.addEventListener('click', (event) => {
+        event.preventDefault(); // Prevent default link behavior
+        currentCategory = link.getAttribute('value'); // Get the category from the "value" attribute
+
+        currentPage = 1; // Reset to the first page for the new category
+        loadProducts(currentCategory, currentPage); // Load products for the selected category
+    });
+});
+

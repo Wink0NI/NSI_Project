@@ -1,0 +1,97 @@
+/* Style for the product container */
+.produit {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 15px 0;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Hover effect for product container */
+.produit:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Style for product image */
+.produit img {
+    border-radius: 5px;
+    margin-bottom: 10px;
+    max-width: 150px;
+    height: auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Styling text inside the product card */
+.produit strong {
+    font-weight: 600;
+    color: #333;
+    display: inline-block;
+    margin: 5px 0;
+}
+
+.produit p {
+    margin: 5px 0;
+    color: #555;
+}
+
+/* Style for buttons */
+.produit button {
+    padding: 8px 16px;
+    margin: 10px 5px 0 0;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.produit button:hover {
+    background-color: #0056b3;
+}
+
+/* Specific styles for different button types */
+.delete_product {
+    background-color: #dc3545;
+}
+
+.delete_product:hover {
+    background-color: #b02a37;
+}
+
+.edit_product {
+    background-color: #ffc107;
+}
+
+.edit_product:hover {
+    background-color: #e0a800;
+}
+
+.link_button {
+    background-color: #28a745;
+}
+
+.link_button:hover {
+    background-color: #218838;
+}
+
+/* Ensure spacing between buttons */
+.produit button + button {
+    margin-left: 10px;
+}
+
+/* Responsive layout adjustments */
+@media (max-width: 768px) {
+    .produit {
+        max-width: 100%;
+    }
+
+    .produit img {
+        max-width: 100px;
+    }
+}

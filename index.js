@@ -231,7 +231,7 @@ async function decryptProduct(product) {
         throw error; // Re-throw error for handling in the calling function
     }
 
-    
+
 }
 
 async function decryptProducts(products) {
@@ -393,70 +393,80 @@ app.get('/produit/:product_id', async (req, res) => {
 
 // Route pour récupérer la liste de tous les produits avec les informations price, type et image
 app.get('/produits', async (req, res) => {
+    let { page = 1, limit = 10, category = '' } = req.query; // Default to page 1, 10 products per page
+    const offset = (page - 1) * limit;
+
+    category = category === "indetermine" ? "" : category
+
     try {
-        // Fetch available products from the database
-        const rows = await new Promise((resolve, reject) => {
-            const query = `
-                SELECT id, name, echange_type 
-                FROM products 
-                WHERE status = "AVAILABLE" 
-                ORDER BY date_creation DESC
-            `;
-            db.all(query, [], (err, rows) => {
+        // Construct the query with pagination, category, and product details
+        const baseQuery = `
+            SELECT *
+            FROM products
+            WHERE status = "AVAILABLE"
+            ORDER BY date_creation DESC
+            LIMIT ? OFFSET ?
+        `;
+
+        const queryParams = [limit, offset];
+
+        
+
+        let rows = await new Promise((resolve, reject) => {
+            db.all(baseQuery, queryParams, (err, rows) => {
                 if (err) {
-                    return reject(new Error('Erreur interne du serveur' + err.message));
+                    return reject(new Error('Erreur interne du serveur: ' + err.message));
                 }
                 resolve(rows);
             });
         });
 
-        // Decrypt the product details
-        const decryptedProducts = await decryptProducts(rows);
+        const countQuery = `
+            SELECT category, COUNT(*) AS count
+            FROM products
+            WHERE status = "AVAILABLE"
+            GROUP BY category
+        `;
 
-        // Return the decrypted products
-        return res.json({ produits: decryptedProducts });
-
-    } catch (error) {
-        console.error('Error fetching products:', error.message);
-        return res.status(500).json({ error: 'Erreur interne du serveur' });
-    }
-});
-
-
-app.get('/produits/:category', async (req, res) => {
-    const category = req.params.category;
-
-    try {
-        // Fetch products directly from the database, filtering by decrypted category
-        const rows = await new Promise((resolve, reject) => {
-            const query = `
-                SELECT id, name, echange_type, echange_contre, category, date_creation 
-                FROM products 
-                WHERE status = "AVAILABLE" 
-                ORDER BY date_creation DESC
-            `;
-            db.all(query, [], (err, rows) => {
+        let count_row = await new Promise((resolve, reject) => {
+            db.all(countQuery, (err, rows) => {
                 if (err) {
-                    return reject(new Error('Erreur interne du serveur'));
+                    return reject(new Error('Erreur interne du serveur: ' + err.message));
                 }
                 resolve(rows);
             });
         });
+
+        // Decrypt the product details (assuming decryptProducts is an existing utility)
+        rows = await decryptProducts(rows);
+
 
         // Filter rows based on decrypted category
-        const filteredRows = rows.filter(row => {
-            const decryptedCategory = CryptoJS.AES.decrypt(row.category, key).toString(CryptoJS.enc.Utf8);
-            return decryptedCategory === category;
+        if (category) {
+            rows = rows.filter(row => {
+                return row.category === category;
+            });
+
+            count_row = count_row.filter(row => {
+                return CryptoJS.AES.decrypt(row.category, key).toString(CryptoJS.enc.Utf8) === category;
+            });
+        } 
+        
+        count_row = count_row.map(row => row.count).reduce((partialSum, a) => partialSum + a, 0)
+
+        // Calculate total pages
+        const totalPages = Math.ceil(count_row / limit);
+
+        // Return the products along with pagination data
+        return res.json({
+            produits: rows,
+            currentPage: parseInt(page),
+            totalPages: totalPages,
+            totalProducts: count_row
         });
 
-        // Decrypt the product details
-        const decryptedProducts = await decryptProducts(filteredRows);
-
-        // Return the filtered and decrypted products
-        return res.json({ produits: decryptedProducts });
-
     } catch (error) {
-        console.error('Error fetching products:', error.message);
+        console.error('Error fetching products:', error,);
         return res.status(500).json({ error: 'Erreur interne du serveur' });
     }
 });
@@ -488,8 +498,14 @@ app.get('/my_products', async (req, res) => {
         return res.status(401).json({ error: 'Vous devez vous connecter pour voir vos produits' });
     }
 
+    // Get page and limit from query params, or set defaults
+    let { page = 1, limit = 10 } = req.query;
+    page = parseInt(page, 10);
+    limit = parseInt(limit, 10);
+    const offset = (page - 1) * limit;
+
     try {
-        // Fetch all products owned by the user from the database
+        // Fetch all products from the database
         const rows = await new Promise((resolve, reject) => {
             const query = 'SELECT * FROM products ORDER BY date_creation DESC';
             db.all(query, [], (err, rows) => {
@@ -500,20 +516,31 @@ app.get('/my_products', async (req, res) => {
             });
         });
 
-        // Filter rows based on the owner
+        // Filter rows based on the owner (using decryption)
         const filteredRows = rows.filter((annonce) => {
             const decryptedOwner = CryptoJS.AES.decrypt(annonce.owner, key).toString(CryptoJS.enc.Utf8);
             return decryptedOwner === utilisateur.username;
         });
 
-        // Check if no products were found
+        // If no products found
         if (filteredRows.length === 0) {
-            return res.json({ message: 'Aucun produit trouvé.' });
+            return res.json({ message: 'Aucun produit trouvé.', products: [], currentPage: 1, totalPages: 1 });
         }
 
         // Decrypt the product details
         const decryptedProducts = await decryptProducts(filteredRows);
-        return res.json({ products: decryptedProducts });
+
+        // Paginate the decrypted products
+        const paginatedProducts = decryptedProducts.slice(offset, offset + limit);
+        const totalPages = Math.ceil(decryptedProducts.length / limit);
+
+        // Return paginated results and pagination info
+        return res.json({
+            products: paginatedProducts,
+            currentPage: parseInt(page),
+            totalPages: totalPages,
+            totalProducts: decryptedProducts.length
+        });
 
     } catch (error) {
         console.error('Error fetching user products:', error.message);
@@ -560,7 +587,7 @@ app.post('/my_products/delete', async (req, res) => {
 
         // Delete images from the post_image table
         await new Promise((resolve, reject) => {
-            db.run('DELETE FROM post_image WHERE post_id = ?', [image_id], function(err) {
+            db.run('DELETE FROM post_image WHERE post_id = ?', [image_id], function (err) {
                 if (err) {
                     return reject(new Error('Erreur interne du serveur'));
                 }
@@ -571,7 +598,7 @@ app.post('/my_products/delete', async (req, res) => {
         // Delete image files from the file system
         images.forEach(image => {
             image.image = CryptoJS.AES.decrypt(image, key).toString(CryptoJS.enc.Utf8)
-            
+
             const imagePath = path.join(__dirname, 'uploads', image.image); // Assuming 'image' is the file name in the post_image table
             try {
                 fs.unlinkSync(imagePath);
